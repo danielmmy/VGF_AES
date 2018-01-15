@@ -62,6 +62,12 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
     #define Nr 10       // The number of rounds in AES Cipher.
 #endif
 
+#if defined(WITH_TRANSFORMATION)
+	#define with_transformation 1
+#else
+	#define with_transformation 0
+#endif
+
 // jcallan@github points out that declaring Multiply as a function 
 // reduces code size considerably with the Keil ARM compiler.
 // See this link for more information: https://github.com/kokke/tiny-AES-C/pull/3
@@ -260,16 +266,21 @@ static void AddRoundKey(uint8_t round,state_t* state,uint8_t* RoundKey)
 
 // The SubBytes Function Substitutes the values in the
 // state matrix with values in an S-box.
-static void SubBytes(state_t* state)
-{
+static void SubBytes(state_t* state){
   uint8_t i, j;
-  for (i = 0; i < 4; ++i)
-  {
-    for (j = 0; j < 4; ++j)
-    {
-      (*state)[j][i] = getSBoxValue((*state)[j][i]);
-    }
-  }
+	if(with_transformation){
+		for (i = 0; i < 4; ++i){
+                        for (j = 0; j < 4; ++j){
+                                (*state)[j][i] = getSBoxValueWithTransformation((*state)[j][i]);
+                        }
+                }
+	}else{
+		for (i = 0; i < 4; ++i){
+			for (j = 0; j < 4; ++j){
+				(*state)[j][i] = getSBoxValue((*state)[j][i]);
+	    		}
+  		}
+	}
 }
 
 // The ShiftRows() function shifts the rows in the state to the left.
@@ -368,16 +379,21 @@ static void InvMixColumns(state_t* state)
 
 // The SubBytes Function Substitutes the values in the
 // state matrix with values in an S-box.
-static void InvSubBytes(state_t* state)
-{
-  uint8_t i, j;
-  for (i = 0; i < 4; ++i)
-  {
-    for (j = 0; j < 4; ++j)
-    {
-      (*state)[j][i] = getSBoxInvert((*state)[j][i]);
-    }
-  }
+static void InvSubBytes(state_t* state){
+	uint8_t i, j;
+	if(with_transformation){
+		for (i = 0; i < 4; ++i){
+			for (j = 0; j < 4; ++j){
+				(*state)[j][i] = getSBoxInvertWithTransformation((*state)[j][i]);
+			}
+  		}
+	}else{
+		for (i = 0; i < 4; ++i){
+                        for (j = 0; j < 4; ++j){
+                                (*state)[j][i] = getSBoxInvert((*state)[j][i]);
+                        }
+                }
+	}
 }
 
 static void InvShiftRows(state_t* state)
@@ -571,3 +587,11 @@ void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length)
 
 #endif // #if defined(CTR) && (CTR == 1)
 
+
+uint8_t getSBoxValueWithTransformation(uint8_t num){
+	return sbox[num];
+}
+
+uint8_t getSBoxInvertWithTransformation(uint8_t num){
+        return rsbox[num];
+}

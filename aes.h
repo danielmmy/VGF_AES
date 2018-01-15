@@ -33,6 +33,8 @@ This is to implement variations of the AES with Varied Galois Field.
 #define AES128 1
 //#define AES192 1
 //#define AES256 1
+#define WITH_TRANSFORMATION
+
 
 #define AES_BLOCKLEN 16 //Block length in bytes AES is 128b block only
 
@@ -93,5 +95,14 @@ void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length);
 
 #endif // #if defined(CTR) && (CTR == 1)
 
+
+/*
+function to get SBox value by implementing transformation
+*/
+uint8_t getSBoxValueWithTransformation(uint8_t num);
+/*
+function to get SBox Inverted value by implementing transformation
+*/
+uint8_t getSBoxInvertWithTransformation(uint8_t num);
 
 #endif //_AES_H_
