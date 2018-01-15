@@ -1,6 +1,6 @@
 /*
 This implemenations is basically the same avaiable at https://github.com/kokke/tiny-AES-c.
-The changes in the code are to use the transformations instead of subtitutions tables for example during the s-box stage.
+The changes in the code are to use the transformations instead of subtitutions tables for example during the S-box stage.
 This is to implement variations of the AES with Varied Galois Field. 
 */
 
