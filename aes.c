@@ -595,3 +595,53 @@ uint8_t getSBoxValueWithTransformation(uint8_t num){
 uint8_t getSBoxInvertWithTransformation(uint8_t num){
         return rsbox[num];
 }
+
+int GCDExtended(int num,int x,int *y,int *z){
+	if(num==0){
+		*y=0;
+		*z=1;
+		return x;
+	}
+
+	int y1, z1;
+	int gcd= GCDExtended(x%num,num,&y1,&z1);
+	*y = z1 - (x/num) * y1;
+	*z = y1;
+
+    return gcd;
+}
+
+uint8_t getInv(uint8_t num){
+	int x,y,z;
+	x=283;//(x^8+x^4+x^3+x+1)
+	GCDExtended(num,x,&y,&z);
+	return y+x;
+}
+
+
+/* Add two numbers in a GF(2^8) finite field */
+uint8_t gadd(uint8_t a, uint8_t b) {
+	return a ^ b;
+}
+
+/* Subtract two numbers in a GF(2^8) finite field */
+uint8_t gsub(uint8_t a, uint8_t b) {
+	return a ^ b;
+}
+
+uint8_t GFmul(uint8_t a, uint8_t b) {
+	uint8_t p = 0; /* the product of the multiplication */
+	while (a && b) {
+	if (b & 1) /* if b is odd, then add the corresponding a to p (final product = sum of all a's corresponding to odd b's) */
+	p ^= a; /* since we're in GF(2^m), addition is an XOR */
+	if (a & 0x80) /* GF modulo: if a >= 128, then it will overflow when shifted left, so reduce */
+        a = (a << 1) ^ 0x11b; /* XOR with the primitive polynomial x^8 + x^4 + x^3 + x + 1 (0b1_0001_1011) – you can change it but it must be irreducible */
+        else
+        	a <<= 1; /* equivalent to a*2 */
+        	b >>= 1; /* equivalent to b // 2 */
+	}
+	return p;
+}
+
+
+

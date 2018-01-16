@@ -104,5 +104,24 @@ uint8_t getSBoxValueWithTransformation(uint8_t num);
 function to get SBox Inverted value by implementing transformation
 */
 uint8_t getSBoxInvertWithTransformation(uint8_t num);
+/*
+function to get SBox Inverted value by implementing transformation
+*/
+uint8_t getInv(uint8_t);
+
+int GCDExtended(int num,int x,int *y,int *z);
+
+
+/* Add two numbers in a GF(2^8) finite field */
+uint8_t gadd(uint8_t a, uint8_t b);
+
+/* Subtract two numbers in a GF(2^8) finite field */
+uint8_t gsub(uint8_t a, uint8_t b);
+/* Multiply two numbers in the GF(2^8) finite field defined 
+ * by the polynomial x^8 + x^4 + x^3 + x + 1 = 0
+ * using the Russian Peasant Multiplication algorithm
+ * (the other way being to do carry-less multiplication followed by a modular reduction)
+ */
+uint8_t GFmul(uint8_t a, uint8_t b); 
 
 #endif //_AES_H_

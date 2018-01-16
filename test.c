@@ -32,6 +32,9 @@ static void test_encrypt_ecb_verbose(void);
 int main(void)
 {
 
+printf("%d inverted is %d\n",22,getInv(22));
+printf("%d inverted is %d\n",22,gadd(GFmul(241,getInv(22)),99));
+
 #ifdef AES128
     printf("\nTesting AES128\n\n");
 #elif defined(AES192)
