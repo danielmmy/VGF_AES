@@ -1,6 +1,3 @@
-### Tiny AES in C
-
-
 #######################################################
 |This implemenations is basically the same avaiable at|
 |https://github.com/kokke/tiny-AES-c. The changes in  |
