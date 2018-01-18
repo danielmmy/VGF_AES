@@ -1,17 +1,11 @@
 #include <stdio.h>
-#include <getopt.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
 
-#include "gf_complete.h"
+#include "VGF_AES.h"
 
-
-unsigned int gf8_at_multiply(unsigned int num){
+unsigned int gf8_at_multiply(uint8_t num, uint8_t S){
 	int i=0;
 	uint8_t counter;
-	uint8_t S=248;
+//	uint8_t S=248;
 	uint8_t retval=0;
 	uint8_t tmp;
 	for(i=7;i>=0;--i){
@@ -54,14 +48,30 @@ int main(int argc, char **argv){
 			printf("\n");
 		}
 		if(i==0){
-			printf(" 99 ");
+			printf("%2x ",99);
 		}else{
 			inv=gf.inverse.w32(&gf, i);
-			mult=gf8_at_multiply(inv);
+			mult=gf8_at_multiply(inv,248);
 			add=mult^99;
-			printf("%3d ",add);
+			printf("%2x ",add);
 		}
 	}
-	printf("\n");
+	printf("\n\n");
+
+        for(i=0;i<256;++i){
+                if(i%16==0){
+                        printf("\n");
+                }
+                if(i==0){
+                        printf("%2x ",82);
+                }else{
+                        mult=gf8_at_multiply(i,82);
+                        add=mult^5;
+                        inv=gf.inverse.w32(&gf, add);
+                        printf("%2x ",inv);
+                }
+        }
+        printf("\n\n");
+
 }
 
