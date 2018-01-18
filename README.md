@@ -10,6 +10,10 @@
 |with Varied Galois Field.                            |
 |You can use the original project by comenting the    |
 |symbol WITH_TRANFORMATION in aes.h                   |
+|Also, this project uses the gf-complete library      |
+|developed by James S. Plank, Ethan L. Miller, Kevin  |
+|M. Greenan, Benjamin A. Arnold, John A. Burnum, Adam |
+|W. Disney and Allen C. McBride                       |
 #######################################################
 
 
