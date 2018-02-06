@@ -163,9 +163,9 @@ int main(int argc, char **argv){
                 if(i==0){
                         printf("%2x ",82);
                 }else{
-                        mult=gf8_at_multiply(i,82);
-                        add=mult^5;
-                        inv=gf.inverse.w32(&gf, add);
+                        add=i^99;
+                        mult=gf8_at_multiply(add,82);
+                        inv=gf.inverse.w32(&gf, mult);
                         printf("%2x ",inv);
                 }
         }
@@ -191,8 +191,25 @@ int main(int argc, char **argv){
                 }
         }
 //	printf("\n37 inv %d\n37X9=%d\n",gf.inverse.w32(&gf, 37),gf.multiply.w32(&gf,37,9));
-        printf("\n\n");
+	printf("\n\n");
+        for(i=0;i<64;++i){
+                if(i%8==0){
+                        printf("\n");
+                }
+                if(i==0){
+                        printf("%2x ",49);
+                }else{
+                        add=i^38;
+                        mult=gf6_at_multiply(add,25);
+                        inv=gf.inverse.w32(&gf,mult);
+                        printf("%2x ",inv);
+                }
+        }
 
+
+
+        printf("\n\n");
+	
         printf("\n\n");
 
 	gf_init_hard(&gf, 4, GF_MULT_DEFAULT, GF_REGION_DEFAULT, GF_DIVIDE_DEFAULT,
@@ -213,7 +230,7 @@ int main(int argc, char **argv){
                         printf("%2x ",add);
                 }
         }
-        printf("\n5 inv %d\n5X11=%d\n",gf.inverse.w32(&gf, 5),gf.multiply.w32(&gf,5,11));
+        //printf("\n5 inv %d\n5X11=%d\n",gf.inverse.w32(&gf, 5),gf.multiply.w32(&gf,5,11));
         printf("\n\n");
 	for(i=0;i<16;++i){
                 if(i%4==0){
@@ -222,9 +239,9 @@ int main(int argc, char **argv){
                 if(i==0){
                         printf("%2x ",11);
                 }else{
-                        mult=gf4_at_multiply(i,14);
-                        add=mult^11;
-                        inv=gf.inverse.w32(&gf, add);
+                        add=i^10;
+                        mult=gf4_at_multiply(add,14);
+                        inv=gf.inverse.w32(&gf,mult);
                         printf("%2x ",inv);
                 }
         }
@@ -242,26 +259,26 @@ int main(int argc, char **argv){
                         printf("\n");
                 }
                 if(i==0){
-                        printf("%2x ",1);
+                        printf("%2x ",2);
                 }else{
                         inv=gf.inverse.w32(&gf, i);
-                        mult=gf2_at_multiply(inv,1);
-                        add=mult^1;
+                        mult=gf2_at_multiply(inv,2);
+                        add=mult^2;
                         printf("%2x ",add);
                 }
         }
-        printf("\n2 inv %d\n2X3=%d\n",gf.inverse.w32(&gf, 2),gf.multiply.w32(&gf,2,3));
+        //printf("\n2 inv %d\n2X3=%d\n",gf.inverse.w32(&gf, 2),gf.multiply.w32(&gf,2,3));
         printf("\n\n");
         for(i=0;i<4;++i){
                 if(i%2==0){
                         printf("\n");
                 }
                 if(i==0){
-                        printf("%2x ",2);
+                        printf("%2x ",3);
                 }else{
-                        mult=gf4_at_multiply(i,14);
-                        add=mult^10;
-                        inv=gf.inverse.w32(&gf, add);
+                        add=i^2;
+                        mult=gf2_at_multiply(add,2);
+                        inv=gf.inverse.w32(&gf,mult);
                         printf("%2x ",inv);
                 }
         }
