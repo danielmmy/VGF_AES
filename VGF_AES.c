@@ -129,7 +129,7 @@ unsigned int gf2_at_multiply(uint8_t num, uint8_t S){
         return retval&3;
 }
 
-
+#if 0
 int main(int argc, char **argv){
 	int i,n;
         gf_t gf;
@@ -287,4 +287,4 @@ int main(int argc, char **argv){
 
 
 }
-
+#endif
