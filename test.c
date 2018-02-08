@@ -1,11 +1,3 @@
-/*
-This implemenations is basically the same avaiable at https://github.com/kokke/tiny-AES-c.
-The changes in the code are to use the transformations instead of subtitutions tables for example during the s-box stage.
-This is to implement variations of the AES with Varied Galois Field. 
-*/
-
-
-
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
@@ -31,9 +23,7 @@ static void test_encrypt_ecb_verbose(void);
 
 int main(void)
 {
-
-printf("%d inverted is %d\n",22,getInv(22));
-printf("%d inverted is %d\n",22,gadd(GFmul(241,getInv(22)),99));
+initialize_boxes();
 
 #ifdef AES128
     printf("\nTesting AES128\n\n");

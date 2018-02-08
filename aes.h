@@ -122,6 +122,9 @@ uint8_t gsub(uint8_t a, uint8_t b);
  * using the Russian Peasant Multiplication algorithm
  * (the other way being to do carry-less multiplication followed by a modular reduction)
  */
-uint8_t GFmul(uint8_t a, uint8_t b); 
+uint8_t GFmul(uint8_t a, uint8_t b);
 
+
+//Populates sbox and rsbox
+void initialize_boxes(void);
 #endif //_AES_H_

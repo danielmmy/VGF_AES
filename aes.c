@@ -44,6 +44,8 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 #include <stdint.h>
 #include <string.h> // CBC mode, for memset
 #include "aes.h"
+#include "VGF_AES.h"
+#include<stdio.h>
 
 /*****************************************************************************/
 /* Defines:                                                                  */
@@ -83,9 +85,10 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 /*****************************************************************************/
 // state - array holding the intermediate results during decryption.
 typedef uint8_t state_t[4][4];
+static uint8_t sbox[256];
+static uint8_t rsbox[256];
 
-
-
+#if 0
 // The lookup-tables are marked const so they can be placed in read-only storage instead of RAM
 // The numbers below can be computed dynamically trading ROM for RAM - 
 // This can be useful in (embedded) bootloader applications, where ROM is often limited.
@@ -125,6 +128,8 @@ static const uint8_t rsbox[256] = {
   0x60, 0x51, 0x7f, 0xa9, 0x19, 0xb5, 0x4a, 0x0d, 0x2d, 0xe5, 0x7a, 0x9f, 0x93, 0xc9, 0x9c, 0xef,
   0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
   0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d };
+
+#endif
 
 // The round constant word array, Rcon[i], contains the values given by 
 // x to the power (i-1) being powers of x (x is denoted as {02}) in the field GF(2^8)
@@ -644,4 +649,29 @@ uint8_t GFmul(uint8_t a, uint8_t b) {
 }
 
 
+//Populates sbox and rsbox
+void initialize_boxes(void){
+        int i;
+        gf_t gf;
+        uint8_t inv, mult, add;
+//Create the proper instance of the gf_t object using the polynomial x^8+x^4+x^3+x+1: */
+        gf_init_hard(&gf, 8, GF_MULT_DEFAULT, GF_REGION_DEFAULT, GF_DIVIDE_DEFAULT,
+                      0x11b, 0, 0,NULL, NULL);
 
+        for(i=0;i<256;++i){
+                if(i==0){
+                        sbox[i]=99;
+                        rsbox[i]=82;
+                }else{
+                        inv=gf.inverse.w32(&gf, i);
+                        mult=gf8_at_multiply(inv,248);
+                        add=mult^99;
+                        sbox[i]=add;
+			add=i^99;
+                        mult=gf8_at_multiply(add,82);
+                        inv=gf.inverse.w32(&gf, mult);
+                        rsbox[i]=inv;
+
+                }
+        }
+}
