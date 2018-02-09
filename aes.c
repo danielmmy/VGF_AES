@@ -133,9 +133,11 @@ static const uint8_t rsbox[256] = {
 
 // The round constant word array, Rcon[i], contains the values given by 
 // x to the power (i-1) being powers of x (x is denoted as {02}) in the field GF(2^8)
-static const uint8_t Rcon[11] = {
+static uint8_t Rcon[11];
+#if 0
+  static const uint8_t Rcon[11] = {
   0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36 };
-
+#endif
 /*
  * Jordan Goulder points out in PR #12 (https://github.com/kokke/tiny-AES-C/pull/12),
  * that you can remove most of the elements in the Rcon array, because they are unused.
@@ -656,11 +658,26 @@ void initialize_boxes(int w, uint64_t poly){
         uint8_t inv, mult, add;
 //Create the proper instance of the gf_t object using the polynomial x^8+x^4+x^3+x+1: */
         gf_init_hard(&gf, w, GF_MULT_DEFAULT, GF_REGION_DEFAULT, GF_DIVIDE_DEFAULT,
-                      poly, 0, 0,NULL, NULL);	
+                      poly, 0, 0,NULL, NULL);
+
+//initialize The round constant word array, Rcon[i], contains the values given by 
+// x to the power (i-1) being powers of x (x is denoted as {02}) in the field GF(2^w)
+//the complete array is filled depending on the GF size
+	Rcon[0]=0x8d;
+	Rcon[1]=0x01;
 
 switch(w){
 	case(8):
-        	for(i=0;i<256;++i){
+		Rcon[2]=0x02;
+		Rcon[3]=0x04;
+		Rcon[4]=0x08;
+		Rcon[5]=0x10;
+		Rcon[6]=0x20;
+		Rcon[7]=0x40;
+		Rcon[8]=0x80;
+		Rcon[9]=0x1b;
+		Rcon[10]=0x36;
+		for(i=0;i<256;++i){
                 	if(i==0){
                         	sbox[i]=99;
 	                        rsbox[i]=82;
@@ -677,6 +694,15 @@ switch(w){
         	}
 	break;
 	case(4):
+		Rcon[2]=0x02;
+                Rcon[3]=0x04;
+                Rcon[4]=0x08;
+                Rcon[5]=0x03;
+                Rcon[6]=0x06;
+                Rcon[7]=0x0c;
+                Rcon[8]=0x0b;
+                Rcon[9]=0x05;
+                Rcon[10]=0x0a;
 		for(i=0;i<16;++i){
                 	if(i==0){
                         	sbox[i]=10;
