@@ -663,7 +663,7 @@ void initialize_boxes(int w, uint64_t poly){
 //initialize The round constant word array, Rcon[i], contains the values given by 
 // x to the power (i-1) being powers of x (x is denoted as {02}) in the field GF(2^w)
 //the complete array is filled depending on the GF size
-	Rcon[0]=0x8d;
+	Rcon[0]=0x00;//Actually 0x8d for gf8 in Rijndael, but never actually used
 	Rcon[1]=0x01;
 
 switch(w){
