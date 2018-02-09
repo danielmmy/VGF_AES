@@ -53,3 +53,4 @@ dkms.conf
 
 #VGF_AES executable
 VGF_AES
+test_gf_complete
