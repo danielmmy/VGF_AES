@@ -3,8 +3,8 @@
 #OBJCOPY      = avr-objcopy
 CC           = gcc
 LD           = gcc
-CFLAGS       = -Wall -Os -c 
-LDFLAGS      = -Wall -Os -Wl,-Map,test.map
+CFLAGS       = -Wall -Os -c  
+LDFLAGS      = -Wall -Os -Wl,-Map,test.map 
 
 OBJCOPYFLAFS = -j .text -O ihex
 OBJCOPY      = objcopy
