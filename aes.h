@@ -126,5 +126,7 @@ uint8_t GFmul(uint8_t a, uint8_t b);
 
 
 //Populates sbox and rsbox
-void initialize_boxes(void);
+//w -> GF size
+//poly -> characteristic polynomial
+void initialize_boxes(int w, uint64_t poly);
 #endif //_AES_H_

@@ -19,38 +19,39 @@ static void test_decrypt_ctr(void);
 static void test_encrypt_ecb(void);
 static void test_decrypt_ecb(void);
 static void test_encrypt_ecb_verbose(void);
+static void test_encrypt_ecb_gf4(void);
+static void test_decrypt_ecb_gf4(void);
 
-
-int main(void)
-{
-initialize_boxes();
+int main(void){
 
 #ifdef AES128
-    printf("\nTesting AES128\n\n");
+	printf("\nTesting AES128\n\n");
 #elif defined(AES192)
-    printf("\nTesting AES192\n\n");
+	printf("\nTesting AES192\n\n");
 #elif defined(AES256)
-    printf("\nTesting AES256\n\n");
+	printf("\nTesting AES256\n\n");
 #else
-    printf("You need to specify a symbol between AES128, AES192 or AES256. Exiting");
-    return 0;
+	printf("You need to specify a symbol between AES128, AES192 or AES256. Exiting");
+	return 0;
 #endif
 
-    test_encrypt_cbc();
-    test_decrypt_cbc();
-    test_encrypt_ctr();
-    test_decrypt_ctr();
-    test_decrypt_ecb();
-    test_encrypt_ecb();
-    test_encrypt_ecb_verbose();
-
-    return 0;
+	initialize_boxes(8,0x11b);
+	test_encrypt_cbc();
+	test_decrypt_cbc();
+	test_encrypt_ctr();
+	test_decrypt_ctr();
+	test_decrypt_ecb();
+	test_encrypt_ecb();
+	test_encrypt_ecb_verbose();
+	initialize_boxes(4,0x13);
+	test_encrypt_ecb_gf4();
+	test_decrypt_ecb_gf4();
+	return 0;
 }
 
 
 // prints string as hex
-static void phex(uint8_t* str)
-{
+static void phex(uint8_t* str){
 
 #ifdef AES128
     uint8_t len = 16;
@@ -323,5 +324,94 @@ static void test_decrypt_ecb(void)
         printf("FAILURE!\n");
     }
 }
+
+static void test_decrypt_ecb_gf4(void){
+	        // Example of more verbose verification
+        uint8_t i, buf[64], buf2[64];
+
+        // 128bit key
+        uint8_t key[16] =        { (uint8_t) 0xf, (uint8_t) 0xe, (uint8_t) 0xd, (uint8_t) 0xc, (uint8_t) 0xb, (uint8_t) 0xa, (uint8_t) 0x9, (uint8_t) 0x8, (uint8_t) 0x7, (uint8_t) 0x6, (uint8_t) 0x5, (uint8_t) 0x4, (uint8_t) 0x3, (uint8_t) 0x2, (uint8_t) 0x1, (uint8_t) 0x0 };
+        // 512bit text
+        uint8_t cypher_text[64] = { (uint8_t) 0x3e, (uint8_t) 0xab, (uint8_t) 0x9f, (uint8_t) 0xc6, (uint8_t) 0x61, (uint8_t) 0xa2, (uint8_t) 0xef, (uint8_t) 0x0b, (uint8_t) 0x6b, (uint8_t) 0x27, (uint8_t) 0x54, (uint8_t) 0x13, (uint8_t) 0xdc, (uint8_t) 0xa8, (uint8_t) 0x9b, (uint8_t) 0xcb,
+        (uint8_t) 0xee, (uint8_t) 0x55, (uint8_t) 0xd5, (uint8_t) 0x67, (uint8_t) 0x9b, (uint8_t) 0x22, (uint8_t) 0x7d, (uint8_t) 0xd3, (uint8_t) 0xa3, (uint8_t) 0xb8, (uint8_t) 0x4e, (uint8_t) 0xb1, (uint8_t) 0xd8, (uint8_t) 0xc2, (uint8_t) 0x26, (uint8_t) 0x19,
+        (uint8_t) 0x3e, (uint8_t) 0xab, (uint8_t) 0x2, (uint8_t) 0x3, (uint8_t) 0x4, (uint8_t) 0x5, (uint8_t) 0x6, (uint8_t) 0x7, (uint8_t) 0x8, (uint8_t) 0x9, (uint8_t) 0xa, (uint8_t) 0xb, (uint8_t) 0xc, (uint8_t) 0xd, (uint8_t) 0xe, (uint8_t) 0xf,
+        (uint8_t) 0xf, (uint8_t) 0xe, (uint8_t) 0xd, (uint8_t) 0xc, (uint8_t) 0xb, (uint8_t) 0xa, (uint8_t) 0x9, (uint8_t) 0x8, (uint8_t) 0x7, (uint8_t) 0x6, (uint8_t) 0x5, (uint8_t) 0x4, (uint8_t) 0x3, (uint8_t) 0x2, (uint8_t) 0x1, (uint8_t) 0x0};
+
+        memset(buf, 0, 64);
+        memset(buf2, 0, 64);
+
+
+        // print cypher, key and IV
+        printf("ECB decrypt verbose with GF4:\n\n");
+        printf("cypher text:\n");
+        for (i = (uint8_t) 0; i < (uint8_t) 4; ++i){
+                phex(cypher_text + i * (uint8_t) 16);
+        }
+        printf("\n");
+
+        printf("key:\n");
+        phex(key);
+        printf("\n");
+
+        // print the plain text as 4 x 16 byte strings
+        printf("plain text:\n");
+
+        struct AES_ctx ctx;
+        AES_init_ctx(&ctx, key);
+
+        for (i = 0; i < 4; ++i){
+                AES_ECB_decrypt(&ctx, cypher_text + (i * 16));
+                phex(cypher_text + (i * 16));
+        }
+        printf("\n");
+}
+
+static void test_encrypt_ecb_gf4(void){
+
+	// Example of more verbose verification
+	uint8_t i, buf[64], buf2[64];
+
+	// 128bit key
+	uint8_t key[16] =        { (uint8_t) 0xf, (uint8_t) 0xe, (uint8_t) 0xd, (uint8_t) 0xc, (uint8_t) 0xb, (uint8_t) 0xa, (uint8_t) 0x9, (uint8_t) 0x8, (uint8_t) 0x7, (uint8_t) 0x6, (uint8_t) 0x5, (uint8_t) 0x4, (uint8_t) 0x3, (uint8_t) 0x2, (uint8_t) 0x1, (uint8_t) 0x0 };
+	// 512bit text
+	uint8_t plain_text[64] = { (uint8_t) 0x0, (uint8_t) 0x1, (uint8_t) 0x2, (uint8_t) 0x3, (uint8_t) 0x4, (uint8_t) 0x5, (uint8_t) 0x6, (uint8_t) 0x7, (uint8_t) 0x8, (uint8_t) 0x9, (uint8_t) 0xa, (uint8_t) 0xb, (uint8_t) 0xc, (uint8_t) 0xd, (uint8_t) 0xe, (uint8_t) 0xf,
+	(uint8_t) 0xf, (uint8_t) 0xe, (uint8_t) 0xd, (uint8_t) 0xc, (uint8_t) 0xb, (uint8_t) 0xa, (uint8_t) 0x9, (uint8_t) 0x8, (uint8_t) 0x7, (uint8_t) 0x6, (uint8_t) 0x5, (uint8_t) 0x4, (uint8_t) 0x3, (uint8_t) 0x2, (uint8_t) 0x1, (uint8_t) 0x0,
+	(uint8_t) 0x0, (uint8_t) 0x1, (uint8_t) 0x2, (uint8_t) 0x3, (uint8_t) 0x4, (uint8_t) 0x5, (uint8_t) 0x6, (uint8_t) 0x7, (uint8_t) 0x8, (uint8_t) 0x9, (uint8_t) 0xa, (uint8_t) 0xb, (uint8_t) 0xc, (uint8_t) 0xd, (uint8_t) 0xe, (uint8_t) 0xf,
+	(uint8_t) 0xf, (uint8_t) 0xe, (uint8_t) 0xd, (uint8_t) 0xc, (uint8_t) 0xb, (uint8_t) 0xa, (uint8_t) 0x9, (uint8_t) 0x8, (uint8_t) 0x7, (uint8_t) 0x6, (uint8_t) 0x5, (uint8_t) 0x4, (uint8_t) 0x3, (uint8_t) 0x2, (uint8_t) 0x1, (uint8_t) 0x0};
+
+	memset(buf, 0, 64);
+	memset(buf2, 0, 64);
+
+
+	// print text to encrypt, key and IV
+	printf("ECB encrypt verbose with GF4:\n\n");
+	printf("plain text:\n");
+	for (i = (uint8_t) 0; i < (uint8_t) 4; ++i){
+		phex(plain_text + i * (uint8_t) 16);
+    	}
+    	printf("\n");
+
+	printf("key:\n");
+	phex(key);
+	printf("\n");
+
+	// print the resulting cipher as 4 x 16 byte strings
+	printf("ciphertext:\n");
+
+	struct AES_ctx ctx;
+	AES_init_ctx(&ctx, key);
+
+	for (i = 0; i < 4; ++i){
+		AES_ECB_encrypt(&ctx, plain_text + (i * 16));
+		phex(plain_text + (i * 16));
+	}
+	printf("\n");
+	for(i=0;i<176;++i)
+		printf("%2x,",ctx.RoundKey[i]);
+	printf("\n\n");
+}
+
+
+
 
 

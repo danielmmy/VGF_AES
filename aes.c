@@ -436,7 +436,7 @@ static void Cipher(state_t* state, uint8_t* RoundKey)
   uint8_t round = 0;
 
   // Add the First round key to the state before starting the rounds.
-  AddRoundKey(0, state, RoundKey); 
+  AddRoundKey(0, state, RoundKey);
   
   // There will be Nr rounds.
   // The first Nr-1 rounds are identical.
@@ -650,28 +650,48 @@ uint8_t GFmul(uint8_t a, uint8_t b) {
 
 
 //Populates sbox and rsbox
-void initialize_boxes(void){
+void initialize_boxes(int w, uint64_t poly){
         int i;
         gf_t gf;
         uint8_t inv, mult, add;
 //Create the proper instance of the gf_t object using the polynomial x^8+x^4+x^3+x+1: */
-        gf_init_hard(&gf, 8, GF_MULT_DEFAULT, GF_REGION_DEFAULT, GF_DIVIDE_DEFAULT,
-                      0x11b, 0, 0,NULL, NULL);
+        gf_init_hard(&gf, w, GF_MULT_DEFAULT, GF_REGION_DEFAULT, GF_DIVIDE_DEFAULT,
+                      poly, 0, 0,NULL, NULL);	
 
-        for(i=0;i<256;++i){
-                if(i==0){
-                        sbox[i]=99;
-                        rsbox[i]=82;
-                }else{
-                        inv=gf.inverse.w32(&gf, i);
-                        mult=gf8_at_multiply(inv,248);
-                        add=mult^99;
-                        sbox[i]=add;
-			add=i^99;
-                        mult=gf8_at_multiply(add,82);
-                        inv=gf.inverse.w32(&gf, mult);
-                        rsbox[i]=inv;
-
-                }
-        }
+switch(w){
+	case(8):
+        	for(i=0;i<256;++i){
+                	if(i==0){
+                        	sbox[i]=99;
+	                        rsbox[i]=82;
+        	        }else{
+                	        inv=gf.inverse.w32(&gf, i);
+                        	mult=gf8_at_multiply(inv,248);
+	                        add=mult^99;
+        	                sbox[i]=add;
+				add=i^99;
+                        	mult=gf8_at_multiply(add,82);
+	                        inv=gf.inverse.w32(&gf, mult);
+        	                rsbox[i]=inv;
+                	}
+        	}
+	break;
+	case(4):
+		for(i=0;i<16;++i){
+                	if(i==0){
+                        	sbox[i]=10;
+				rsbox[i]=11;
+        	        }else{
+                	        inv=gf.inverse.w32(&gf, i);
+                        	mult=gf4_at_multiply(inv,11);
+	                        add=mult^10;
+        	                sbox[i]=add;
+				add=i^10;
+                        	mult=gf4_at_multiply(add,14);
+	                        inv=gf.inverse.w32(&gf,mult);
+        	                rsbox[i]=inv;
+                	}
+        	}
+	break;
+	}
 }
