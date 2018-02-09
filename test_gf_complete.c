@@ -42,7 +42,9 @@ int main(int argc, char **argv){
                         printf("%2x ",inv);
                 }
         }
-	printf("AQUI:%2x\n\n\n",gf.divide.w32(&gf,256,0x11b));
+//	printf("\nAQUI:%2x\n\n\n",gf.divide.w32(&gf,256,0x11b));
+//	printf("AQUI:%2x\n\n\n",gf.divide.w32(&gf,512,0x11b));
+//	printf("AQUI:%2x\n\n\n",gf.divide.w32(&gf,1024,0x11b));
 //	printf("\n99 inv %d\n99X211=%d\n",gf.inverse.w32(&gf, 99),gf.multiply.w32(&gf,99,211));
         printf("\n\n");
 
