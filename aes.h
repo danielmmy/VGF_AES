@@ -67,8 +67,8 @@ void AES_ctx_set_iv(struct AES_ctx* ctx, const uint8_t* iv);
 // buffer size is exactly AES_BLOCKLEN bytes; 
 // you need only AES_init_ctx as IV is not used in ECB 
 // NB: ECB is considered insecure for most uses
-void AES_ECB_encrypt(struct AES_ctx* ctx, const uint8_t* buf);
-void AES_ECB_decrypt(struct AES_ctx* ctx, const uint8_t* buf);
+void AES_ECB_encrypt(struct AES_ctx* ctx, const uint8_t* buf,int w, uint64_t poly);
+void AES_ECB_decrypt(struct AES_ctx* ctx, const uint8_t* buf,int w, uint64_t poly);
 
 #endif // #if defined(ECB) && (ECB == !)
 
@@ -78,8 +78,8 @@ void AES_ECB_decrypt(struct AES_ctx* ctx, const uint8_t* buf);
 // Suggest https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS7 for padding scheme
 // NOTES: you need to set IV in ctx via AES_init_ctx_iv() or AES_ctx_set_iv()
 //        no IV should ever be reused with the same key 
-void AES_CBC_encrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length);
-void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length);
+void AES_CBC_encrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length,int w, uint64_t poly);
+void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length,int w, uint64_t poly);
 
 #endif // #if defined(CBC) && (CBC == 1)
 
@@ -91,7 +91,7 @@ void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length);
 // Suggesting https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS7 for padding scheme
 // NOTES: you need to set IV in ctx with AES_init_ctx_iv() or AES_ctx_set_iv()
 //        no IV should ever be reused with the same key 
-void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length);
+void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length,int w, uint64_t poly);
 
 #endif // #if defined(CTR) && (CTR == 1)
 
@@ -117,13 +117,15 @@ uint8_t gadd(uint8_t a, uint8_t b);
 
 /* Subtract two numbers in a GF(2^8) finite field */
 uint8_t gsub(uint8_t a, uint8_t b);
+
+#if 0
 /* Multiply two numbers in the GF(2^8) finite field defined 
  * by the polynomial x^8 + x^4 + x^3 + x + 1 = 0
  * using the Russian Peasant Multiplication algorithm
  * (the other way being to do carry-less multiplication followed by a modular reduction)
  */
 uint8_t GFmul(uint8_t a, uint8_t b);
-
+#endif
 
 //Populates sbox and rsbox
 //w -> GF size

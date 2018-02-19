@@ -321,27 +321,47 @@ static void ShiftRows(state_t* state)
   (*state)[1][3] = temp;
 }
 
+#if 0
 static uint8_t xtime(uint8_t x)
 {
   return ((x<<1) ^ (((x>>7) & 1) * 0x1b));
 }
-
+#endif
 // MixColumns function mixes the columns of the state matrix
-static void MixColumns(state_t* state)
+static void MixColumns(state_t* state,int w, uint64_t poly)
 {
   uint8_t i;
   uint8_t Tmp, Tm, t;
+	 gf_t gf;
+        gf_init_hard(&gf, w, GF_MULT_DEFAULT, GF_REGION_DEFAULT, GF_DIVIDE_DEFAULT,poly, 0, 0,NULL, NULL);
   for (i = 0; i < 4; ++i)
-  {  
+  { 
+#if 0 
     t   = (*state)[i][0];
     Tmp = (*state)[i][0] ^ (*state)[i][1] ^ (*state)[i][2] ^ (*state)[i][3] ;
     Tm  = (*state)[i][0] ^ (*state)[i][1] ; Tm = xtime(Tm);  (*state)[i][0] ^= Tm ^ Tmp ;
     Tm  = (*state)[i][1] ^ (*state)[i][2] ; Tm = xtime(Tm);  (*state)[i][1] ^= Tm ^ Tmp ;
     Tm  = (*state)[i][2] ^ (*state)[i][3] ; Tm = xtime(Tm);  (*state)[i][2] ^= Tm ^ Tmp ;
     Tm  = (*state)[i][3] ^ t ;              Tm = xtime(Tm);  (*state)[i][3] ^= Tm ^ Tmp ;
+#endif
+	t   = (*state)[i][0];
+	Tmp = (*state)[i][0] ^ (*state)[i][1] ^ (*state)[i][2] ^ (*state)[i][3] ;
+	Tm  = (*state)[i][0] ^ (*state)[i][1] ;
+	Tm = gf.multiply.w32(&gf,Tm,2);
+	(*state)[i][0] ^= Tm ^ Tmp ;
+	Tm  = (*state)[i][1] ^ (*state)[i][2] ;
+	Tm = gf.multiply.w32(&gf,Tm,2);
+	(*state)[i][1] ^= Tm ^ Tmp ;
+	Tm  = (*state)[i][2] ^ (*state)[i][3];
+	Tm = gf.multiply.w32(&gf,Tm,2);
+	(*state)[i][2] ^= Tm ^ Tmp ;
+	Tm  = (*state)[i][3] ^ t ;
+	Tm = gf.multiply.w32(&gf,Tm,2);
+	(*state)[i][3] ^= Tm ^ Tmp ;
+	
   }
 }
-
+#if 0
 // Multiply is used to multiply numbers in the field GF(2^8)
 #if MULTIPLY_AS_A_FUNCTION
 static uint8_t Multiply(uint8_t x, uint8_t y)
@@ -361,14 +381,16 @@ static uint8_t Multiply(uint8_t x, uint8_t y)
       ((y>>4 & 1) * xtime(xtime(xtime(xtime(x))))))   \
 
 #endif
-
+#endif
 // MixColumns function mixes the columns of the state matrix.
 // The method used to multiply may be difficult to understand for the inexperienced.
 // Please use the references to gain more information.
-static void InvMixColumns(state_t* state)
+static void InvMixColumns(state_t* state,int w, uint64_t poly)
 {
   int i;
   uint8_t a, b, c, d;
+	gf_t gf;
+	gf_init_hard(&gf, w, GF_MULT_DEFAULT, GF_REGION_DEFAULT, GF_DIVIDE_DEFAULT,poly, 0, 0,NULL, NULL);	
   for (i = 0; i < 4; ++i)
   { 
     a = (*state)[i][0];
@@ -376,10 +398,10 @@ static void InvMixColumns(state_t* state)
     c = (*state)[i][2];
     d = (*state)[i][3];
 
-    (*state)[i][0] = Multiply(a, 0x0e) ^ Multiply(b, 0x0b) ^ Multiply(c, 0x0d) ^ Multiply(d, 0x09);
-    (*state)[i][1] = Multiply(a, 0x09) ^ Multiply(b, 0x0e) ^ Multiply(c, 0x0b) ^ Multiply(d, 0x0d);
-    (*state)[i][2] = Multiply(a, 0x0d) ^ Multiply(b, 0x09) ^ Multiply(c, 0x0e) ^ Multiply(d, 0x0b);
-    (*state)[i][3] = Multiply(a, 0x0b) ^ Multiply(b, 0x0d) ^ Multiply(c, 0x09) ^ Multiply(d, 0x0e);
+    (*state)[i][0] = gf.multiply.w32(&gf,a, 0x0e) ^ gf.multiply.w32(&gf,b, 0x0b) ^ gf.multiply.w32(&gf,c, 0x0d) ^ gf.multiply.w32(&gf,d, 0x09);
+    (*state)[i][1] = gf.multiply.w32(&gf,a, 0x09) ^ gf.multiply.w32(&gf,b, 0x0e) ^ gf.multiply.w32(&gf,c, 0x0b) ^ gf.multiply.w32(&gf,d, 0x0d);
+    (*state)[i][2] = gf.multiply.w32(&gf,a, 0x0d) ^ gf.multiply.w32(&gf,b, 0x09) ^ gf.multiply.w32(&gf,c, 0x0e) ^ gf.multiply.w32(&gf,d, 0x0b);
+    (*state)[i][3] = gf.multiply.w32(&gf,a, 0x0b) ^ gf.multiply.w32(&gf,b, 0x0d) ^ gf.multiply.w32(&gf,c, 0x09) ^ gf.multiply.w32(&gf,d, 0x0e);
   }
 }
 
@@ -433,7 +455,7 @@ static void InvShiftRows(state_t* state)
 
 
 // Cipher is the main function that encrypts the PlainText.
-static void Cipher(state_t* state, uint8_t* RoundKey)
+static void Cipher(state_t* state, uint8_t* RoundKey, int w, uint64_t poly)
 {
   uint8_t round = 0;
 
@@ -447,7 +469,7 @@ static void Cipher(state_t* state, uint8_t* RoundKey)
   {
     SubBytes(state);
     ShiftRows(state);
-    MixColumns(state);
+    MixColumns(state,w,poly);
     AddRoundKey(round, state, RoundKey);
   }
   
@@ -458,7 +480,7 @@ static void Cipher(state_t* state, uint8_t* RoundKey)
   AddRoundKey(Nr, state, RoundKey);
 }
 
-static void InvCipher(state_t* state,uint8_t* RoundKey)
+static void InvCipher(state_t* state,uint8_t* RoundKey, int w, uint64_t poly)
 {
   uint8_t round = 0;
 
@@ -473,7 +495,7 @@ static void InvCipher(state_t* state,uint8_t* RoundKey)
     InvShiftRows(state);
     InvSubBytes(state);
     AddRoundKey(round, state, RoundKey);
-    InvMixColumns(state);
+    InvMixColumns(state,w,poly);
   }
   
   // The last round is given below.
@@ -490,16 +512,16 @@ static void InvCipher(state_t* state,uint8_t* RoundKey)
 #if defined(ECB) && (ECB == 1)
 
 
-void AES_ECB_encrypt(struct AES_ctx *ctx,const uint8_t* buf)
+void AES_ECB_encrypt(struct AES_ctx *ctx,const uint8_t* buf,int w, uint64_t poly)
 {
   // The next function call encrypts the PlainText with the Key using AES algorithm.
-  Cipher((state_t*)buf, ctx->RoundKey);
+  Cipher((state_t*)buf, ctx->RoundKey,w,poly);
 }
 
-void AES_ECB_decrypt(struct AES_ctx* ctx,const uint8_t* buf)
+void AES_ECB_decrypt(struct AES_ctx* ctx,const uint8_t* buf,int w, uint64_t poly)
 {
   // The next function call decrypts the PlainText with the Key using AES algorithm.
-  InvCipher((state_t*)buf, ctx->RoundKey);
+  InvCipher((state_t*)buf, ctx->RoundKey,w,poly);
 }
 
 
@@ -521,14 +543,14 @@ static void XorWithIv(uint8_t* buf, uint8_t* Iv)
   }
 }
 
-void AES_CBC_encrypt_buffer(struct AES_ctx *ctx,uint8_t* buf, uint32_t length)
+void AES_CBC_encrypt_buffer(struct AES_ctx *ctx,uint8_t* buf, uint32_t length,int w, uint64_t poly)
 {
   uintptr_t i;
   uint8_t *Iv = ctx->Iv;
   for (i = 0; i < length; i += AES_BLOCKLEN)
   {
     XorWithIv(buf, Iv);
-    Cipher((state_t*)buf, ctx->RoundKey);
+    Cipher((state_t*)buf, ctx->RoundKey,w,poly);
     Iv = buf;
     buf += AES_BLOCKLEN;
     //printf("Step %d - %d", i/16, i);
@@ -537,14 +559,14 @@ void AES_CBC_encrypt_buffer(struct AES_ctx *ctx,uint8_t* buf, uint32_t length)
   memcpy(ctx->Iv, Iv, AES_BLOCKLEN);
 }
 
-void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf,  uint32_t length)
+void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf,  uint32_t length,int w, uint64_t poly)
 {
   uintptr_t i;
   uint8_t storeNextIv[AES_BLOCKLEN];
   for (i = 0; i < length; i += AES_BLOCKLEN)
   {
     memcpy(storeNextIv, buf, AES_BLOCKLEN);
-    InvCipher((state_t*)buf, ctx->RoundKey);
+    InvCipher((state_t*)buf, ctx->RoundKey,w,poly);
     XorWithIv(buf, ctx->Iv);
     memcpy(ctx->Iv, storeNextIv, AES_BLOCKLEN);
     buf += AES_BLOCKLEN;
@@ -559,7 +581,7 @@ void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf,  uint32_t length)
 #if defined(CTR) && (CTR == 1)
 
 /* Symmetrical operation: same function for encrypting as for decrypting. Note any IV/nonce should never be reused with the same key */
-void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length)
+void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length,int w, uint64_t poly)
 {
   uint8_t buffer[AES_BLOCKLEN];
   
@@ -571,7 +593,7 @@ void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length)
     {
       
       memcpy(buffer, ctx->Iv, AES_BLOCKLEN);
-      Cipher((state_t*)buffer,ctx->RoundKey);
+      Cipher((state_t*)buffer,ctx->RoundKey,w,poly);
 
       /* Increment Iv and handle overflow */
       for (bi = (AES_BLOCKLEN - 1); bi >= 0; --bi)
@@ -636,6 +658,7 @@ uint8_t gsub(uint8_t a, uint8_t b) {
 	return a ^ b;
 }
 
+#if 0
 uint8_t GFmul(uint8_t a, uint8_t b) {
 	uint8_t p = 0; /* the product of the multiplication */
 	while (a && b) {
@@ -649,7 +672,7 @@ uint8_t GFmul(uint8_t a, uint8_t b) {
 	}
 	return p;
 }
-
+#endif
 
 //Populates sbox and rsbox
 void initialize_boxes(int w, uint64_t poly){

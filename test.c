@@ -105,7 +105,7 @@ static void test_encrypt_ecb_verbose(void)
 
     for (i = 0; i < 4; ++i)
     {
-      AES_ECB_encrypt(&ctx, plain_text + (i * 16));
+      AES_ECB_encrypt(&ctx, plain_text + (i * 16),8,0x11b);
       phex(plain_text + (i * 16));
     }
     printf("\n");
@@ -131,7 +131,7 @@ static void test_encrypt_ecb(void)
     struct AES_ctx ctx;
 
     AES_init_ctx(&ctx, key);
-    AES_ECB_encrypt(&ctx, in);
+    AES_ECB_encrypt(&ctx, in,8,0x11b);
 
     printf("ECB encrypt: ");
 
@@ -177,7 +177,7 @@ static void test_decrypt_cbc(void)
     struct AES_ctx ctx;
 
     AES_init_ctx_iv(&ctx, key, iv);
-    AES_CBC_decrypt_buffer(&ctx, in, 64);
+    AES_CBC_decrypt_buffer(&ctx, in, 64,8,0x11b);
 
     printf("CBC decrypt: ");
 
@@ -221,7 +221,7 @@ static void test_encrypt_cbc(void)
     struct AES_ctx ctx;
 
     AES_init_ctx_iv(&ctx, key, iv);
-    AES_CBC_encrypt_buffer(&ctx, in, 64);
+    AES_CBC_encrypt_buffer(&ctx, in, 64,8,0x11b);
 
     printf("CBC encrypt: ");
 
@@ -277,7 +277,7 @@ static void test_xcrypt_ctr(const char* xcrypt)
     struct AES_ctx ctx;
     
     AES_init_ctx_iv(&ctx, key, iv);
-    AES_CTR_xcrypt_buffer(&ctx, in, 64);
+    AES_CTR_xcrypt_buffer(&ctx, in, 64,8,0x11b);
   
     printf("CTR %s: ", xcrypt);
   
@@ -311,7 +311,7 @@ static void test_decrypt_ecb(void)
     struct AES_ctx ctx;
     
     AES_init_ctx(&ctx, key);
-    AES_ECB_decrypt(&ctx, in);
+    AES_ECB_decrypt(&ctx, in,8,0x11b);
 
     printf("ECB decrypt: ");
 
@@ -332,10 +332,7 @@ static void test_decrypt_ecb_gf4(void){
         // 128bit key
         uint8_t key[16] =        { (uint8_t) 0xf, (uint8_t) 0xe, (uint8_t) 0xd, (uint8_t) 0xc, (uint8_t) 0xb, (uint8_t) 0xa, (uint8_t) 0x9, (uint8_t) 0x8, (uint8_t) 0x7, (uint8_t) 0x6, (uint8_t) 0x5, (uint8_t) 0x4, (uint8_t) 0x3, (uint8_t) 0x2, (uint8_t) 0x1, (uint8_t) 0x0 };
         // 512bit text
-        uint8_t cypher_text[64] = { (uint8_t) 0x3e, (uint8_t) 0xab, (uint8_t) 0x9f, (uint8_t) 0xc6, (uint8_t) 0x61, (uint8_t) 0xa2, (uint8_t) 0xef, (uint8_t) 0x0b, (uint8_t) 0x6b, (uint8_t) 0x27, (uint8_t) 0x54, (uint8_t) 0x13, (uint8_t) 0xdc, (uint8_t) 0xa8, (uint8_t) 0x9b, (uint8_t) 0xcb,
-        (uint8_t) 0xee, (uint8_t) 0x55, (uint8_t) 0xd5, (uint8_t) 0x67, (uint8_t) 0x9b, (uint8_t) 0x22, (uint8_t) 0x7d, (uint8_t) 0xd3, (uint8_t) 0xa3, (uint8_t) 0xb8, (uint8_t) 0x4e, (uint8_t) 0xb1, (uint8_t) 0xd8, (uint8_t) 0xc2, (uint8_t) 0x26, (uint8_t) 0x19,
-        (uint8_t) 0x3e, (uint8_t) 0xab, (uint8_t) 0x2, (uint8_t) 0x3, (uint8_t) 0x4, (uint8_t) 0x5, (uint8_t) 0x6, (uint8_t) 0x7, (uint8_t) 0x8, (uint8_t) 0x9, (uint8_t) 0xa, (uint8_t) 0xb, (uint8_t) 0xc, (uint8_t) 0xd, (uint8_t) 0xe, (uint8_t) 0xf,
-        (uint8_t) 0xf, (uint8_t) 0xe, (uint8_t) 0xd, (uint8_t) 0xc, (uint8_t) 0xb, (uint8_t) 0xa, (uint8_t) 0x9, (uint8_t) 0x8, (uint8_t) 0x7, (uint8_t) 0x6, (uint8_t) 0x5, (uint8_t) 0x4, (uint8_t) 0x3, (uint8_t) 0x2, (uint8_t) 0x1, (uint8_t) 0x0};
+        uint8_t cypher_text[64] = {(uint8_t)0x0a,(uint8_t)0x0c,(uint8_t)0x00,(uint8_t)0x02,(uint8_t)0x08,(uint8_t)0x0d,(uint8_t)0x02,(uint8_t)0x09,(uint8_t)0x07,(uint8_t)0x04,(uint8_t)0x0f,(uint8_t)0x04,(uint8_t)0x00,(uint8_t)0x0f,(uint8_t)0x0c,(uint8_t)0x0d,(uint8_t)0x0f,(uint8_t)0x04,(uint8_t)0x01,(uint8_t)0x06,(uint8_t)0x0b,(uint8_t)0x0e,(uint8_t)0x0a,(uint8_t)0x06,(uint8_t)0x08,(uint8_t)0x0e,(uint8_t)0x0f,(uint8_t)0x0e,(uint8_t)0x09,(uint8_t)0x08,(uint8_t)0x06,(uint8_t)0x03,(uint8_t)0x0a,(uint8_t)0x0c,(uint8_t)0x00,(uint8_t)0x02,(uint8_t)0x08,(uint8_t)0x0d,(uint8_t)0x02,(uint8_t)0x09,(uint8_t)0x07,(uint8_t)0x04,(uint8_t)0x0f,(uint8_t)0x04,(uint8_t)0x00,(uint8_t)0x0f,(uint8_t)0x0c,(uint8_t)0x0d,(uint8_t)0x0f,(uint8_t)0x04,(uint8_t)0x01,(uint8_t)0x06,(uint8_t)0x0b,(uint8_t)0x0e,(uint8_t)0x0a,(uint8_t)0x06,(uint8_t)0x08,(uint8_t)0x0e,(uint8_t)0x0f,(uint8_t)0x0e,(uint8_t)0x09,(uint8_t)0x08,(uint8_t)0x06,(uint8_t)0x03};
 
         memset(buf, 0, 64);
         memset(buf2, 0, 64);
@@ -360,7 +357,7 @@ static void test_decrypt_ecb_gf4(void){
         AES_init_ctx(&ctx, key);
 
         for (i = 0; i < 4; ++i){
-                AES_ECB_decrypt(&ctx, cypher_text + (i * 16));
+                AES_ECB_decrypt(&ctx, cypher_text + (i * 16),4,0x13);
                 phex(cypher_text + (i * 16));
         }
         printf("\n");
@@ -402,13 +399,13 @@ static void test_encrypt_ecb_gf4(void){
 	AES_init_ctx(&ctx, key);
 
 	for (i = 0; i < 4; ++i){
-		AES_ECB_encrypt(&ctx, plain_text + (i * 16));
+		AES_ECB_encrypt(&ctx, plain_text + (i * 16),4,0x13);
 		phex(plain_text + (i * 16));
 	}
 	printf("\n");
-	for(i=0;i<176;++i)
-		printf("%2x,",ctx.RoundKey[i]);
-	printf("\n\n");
+//	for(i=0;i<176;++i)
+//		printf("%2x,",ctx.RoundKey[i]);
+//	printf("\n\n");
 }
 
 
