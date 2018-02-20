@@ -14,12 +14,12 @@ INCLUDE_PATH = /usr/lib/avr/include
 # splint static check
 SPLINT       = splint test.c aes.c -I$(INCLUDE_PATH) +charindex -unrecog
 
-default: test.elf
+default: test
 
 .SILENT:
 .PHONY:  lint clean
 
-test.hex : test.elf
+test.hex : test
 	echo copy object-code to new image and format in hex
 	$(OBJCOPY) ${OBJCOPYFLAFS} $< $@
 
@@ -71,7 +71,7 @@ aes.o : aes.c aes.h VGF_AES.o
 	echo [CC] $@
 	$(CC) $(CFLAGS) -o $@ $<
 
-test.elf : aes.o test.o VGF_AES.o gf_complete.o gf_cpu.o gf_wgen.o gf_w4.o gf_w8.o gf_w16.o gf_w32.o gf_w64.o gf_w128.o
+test : aes.o test.o VGF_AES.o gf_complete.o gf_cpu.o gf_wgen.o gf_w4.o gf_w8.o gf_w16.o gf_w32.o gf_w64.o gf_w128.o
 	echo [LD] $@
 	$(LD) $(LDFLAGS) -o $@ $^
 
