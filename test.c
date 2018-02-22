@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include "aes.h"
+
+#define BUFFSIZE 16
 
 static void phex(uint8_t* str);
 static void test_encrypt(void);
@@ -11,7 +14,8 @@ static void test_decrypt_gf8(void);
 static void test_encrypt_gf4(void);
 static void test_decrypt_gf4(void);
 
-int main(void){
+
+int main(int argc, char **argv){
 	initialize_boxes(8,0x11b);
 	test_encrypt();
 	test_decrypt();
@@ -23,6 +27,45 @@ int main(void){
 	test_encrypt_gf4();
 	printf("\n");
 	test_decrypt_gf4();
+	
+	if(argc==4){
+		initialize_boxes(8,0x11b);
+		FILE *fpr = fopen(argv[2], "rb");
+		FILE *fpw = fopen(argv[3], "wb");
+		uint8_t buff[BUFFSIZE];
+		uint8_t buf[BUFFSIZE];
+		uint8_t buf2[BUFFSIZE];
+		size_t readb;
+		if (fpr!=NULL && fpw!=NULL) {
+			uint8_t key[16]={(uint8_t)0x2b,(uint8_t)0x7e,(uint8_t)0x15,(uint8_t) 0x16, (uint8_t) 0x28, (uint8_t) 0xae, (uint8_t) 0xd2, (uint8_t) 0xa6, (uint8_t) 0xab, (uint8_t) 0xf7, (uint8_t) 0x15, (uint8_t) 0x88, (uint8_t) 0x09, (uint8_t) 0xcf, (uint8_t) 0x4f, (uint8_t) 0x3c };
+			memset(buf, 0, 16);
+			memset(buf2, 0, 16);
+			struct AES_ctx ctx;
+			AES_init_ctx(&ctx, key);
+
+			if(argv[1][0]=='C'||argv[1][0]=='c'){			
+				readb = fread(buff,1,BUFFSIZE,fpr);
+				while(readb==BUFFSIZE){
+					AES_encrypt(&ctx,buff,8,0x11b);
+					fwrite(buff,BUFFSIZE,1,fpw);
+					readb = fread(buff,1,BUFFSIZE,fpr);
+				}
+    			}else if(argv[1][0]=='D'||argv[1][0]=='d'){
+				readb = fread(buff,1,BUFFSIZE,fpr);
+                                while(readb==BUFFSIZE){
+                                        AES_decrypt(&ctx,buff,8,0x11b);
+                                        fwrite(buff,BUFFSIZE,1,fpw);
+                                        readb = fread(buff,1,BUFFSIZE,fpr);
+                                }
+	                }else{
+        	                printf("\n\nUse test [CcDd] filenamein filenameout\n");
+                	}
+			fclose(fpr);
+			fclose(fpw);
+		}	
+	}else{
+		printf("\n\nUse \"test [CcDd] filenamein filenameout\" to cipher or decipher a file\n");
+	}
 	return 0;
 }
 
@@ -44,7 +87,7 @@ static void phex(uint8_t* str){
     printf("\n");
 }
 
-static void test_encrypt(void)
+static void test_encrypt()
 {
 #ifdef AES128
     uint8_t key[] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
