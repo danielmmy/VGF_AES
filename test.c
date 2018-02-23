@@ -13,6 +13,7 @@ static void test_encrypt_gf8(void);
 static void test_decrypt_gf8(void);
 static void test_encrypt_gf4(void);
 static void test_decrypt_gf4(void);
+static void test_cipher_files(int argc, char **argv);
 
 
 int main(int argc, char **argv){
@@ -28,45 +29,106 @@ int main(int argc, char **argv){
 	printf("\n");
 	test_decrypt_gf4();
 	
-	if(argc==4){
-		initialize_boxes(8,0x11b);
-		FILE *fpr = fopen(argv[2], "rb");
-		FILE *fpw = fopen(argv[3], "wb");
-		uint8_t buff[BUFFSIZE];
-		uint8_t buf[BUFFSIZE];
-		uint8_t buf2[BUFFSIZE];
-		size_t readb;
-		if (fpr!=NULL && fpw!=NULL) {
-			uint8_t key[16]={(uint8_t)0x2b,(uint8_t)0x7e,(uint8_t)0x15,(uint8_t) 0x16, (uint8_t) 0x28, (uint8_t) 0xae, (uint8_t) 0xd2, (uint8_t) 0xa6, (uint8_t) 0xab, (uint8_t) 0xf7, (uint8_t) 0x15, (uint8_t) 0x88, (uint8_t) 0x09, (uint8_t) 0xcf, (uint8_t) 0x4f, (uint8_t) 0x3c };
-			memset(buf, 0, 16);
-			memset(buf2, 0, 16);
-			struct AES_ctx ctx;
-			AES_init_ctx(&ctx, key);
-
-			if(argv[1][0]=='C'||argv[1][0]=='c'){			
-				readb = fread(buff,1,BUFFSIZE,fpr);
-				while(readb==BUFFSIZE){
-					AES_encrypt(&ctx,buff,8,0x11b);
-					fwrite(buff,BUFFSIZE,1,fpw);
-					readb = fread(buff,1,BUFFSIZE,fpr);
-				}
-    			}else if(argv[1][0]=='D'||argv[1][0]=='d'){
-				readb = fread(buff,1,BUFFSIZE,fpr);
-                                while(readb==BUFFSIZE){
-                                        AES_decrypt(&ctx,buff,8,0x11b);
-                                        fwrite(buff,BUFFSIZE,1,fpw);
-                                        readb = fread(buff,1,BUFFSIZE,fpr);
-                                }
-	                }else{
-        	                printf("\n\nUse test [CcDd] filenamein filenameout\n");
-                	}
-			fclose(fpr);
-			fclose(fpw);
-		}	
+	if(argc==6){
+		test_cipher_files(argc,argv);
 	}else{
-		printf("\n\nUse \"test [CcDd] filenamein filenameout\" to cipher or decipher a file\n");
+		printf("\n\nUse \"test [CcDd] filenamein filenameout GF(hex) characteristical_polynomial(hex)\" to cipher or decipher a file\n");
 	}
 	return 0;
+}
+
+static void test_cipher_files(int argc, char **argv){
+	char *endptr;
+	unsigned long w=strtoul(argv[4], &endptr, 16);
+	if(endptr==argv[4]){
+		printf("%s is not a valid GF\nExiting...\n",argv[4]);
+		exit(0);
+	}else if(*endptr!='\0'){
+	// String begins with a valid number, but also contains something else after the number
+		printf("%s is not a valid GF\nExiting...\n",argv[4]);
+                exit(0);
+	}
+	unsigned long poly=strtoul(argv[5], &endptr, 16);
+        if(endptr==argv[5]){
+                printf("%s is not a valid GF\nExiting...\n",argv[5]);
+                exit(0);
+        }else if(*endptr!='\0'){
+        // String begins with a valid number, but also contains something else after the number
+                printf("%s is not a valid GF\nExiting...\n",argv[5]);
+                exit(0);
+        }
+	initialize_boxes(w,poly);	
+        FILE *fpr = fopen(argv[2], "rb");
+        FILE *fpw = fopen(argv[3], "wb");
+        uint8_t buff[BUFFSIZE];
+        uint8_t buf[BUFFSIZE];
+        uint8_t buf2[BUFFSIZE];
+        size_t readb;
+        if (fpr!=NULL && fpw!=NULL) {
+		uint8_t *key;
+		if(w==8){
+			key=(uint8_t[16]){(uint8_t)0x2b,(uint8_t)0x7e,(uint8_t)0x15,(uint8_t)0x16,(uint8_t)0x28,(uint8_t)0xae,(uint8_t)0xd2,(uint8_t)0xa6,(uint8_t)0xab,(uint8_t)0xf7,(uint8_t)0x15,(uint8_t)0x88,(uint8_t)0x09,(uint8_t)0xcf,(uint8_t)0x4f,(uint8_t)0x3c};
+		}else if(w==4){
+			key=(uint8_t[16]){(uint8_t)0xf,(uint8_t)0xe,(uint8_t)0xd,(uint8_t)0xc,(uint8_t)0xb,(uint8_t)0xa,(uint8_t)0x9,(uint8_t)0x8,(uint8_t)0x7,(uint8_t)0x6,(uint8_t)0x5,(uint8_t)0x4,(uint8_t)0x3,(uint8_t)0x2,(uint8_t)0x1,(uint8_t)0x0};
+		}else{
+			printf("GF not yet implemented, exiting...\n");
+			exit(0);
+		}
+		memset(buf, 0, 16);
+        	memset(buf2, 0, 16);
+                struct AES_ctx ctx;
+                AES_init_ctx(&ctx, key);
+                if(argv[1][0]=='C'||argv[1][0]=='c'){
+			readb = fread(buff,1,BUFFSIZE,fpr);
+                        while(readb==BUFFSIZE){
+				if(w==4){
+					int i,j;
+					uint8_t tmp[16];
+					for(i=0;i<8;++i){
+						tmp[i*2]=buff[i]<<4;
+						tmp[i*2]=tmp[i*2]>>4;
+						tmp[i*2+1]=buff[i]>>4;
+					}
+					AES_encrypt(&ctx,tmp,w,poly);
+					fwrite(tmp,BUFFSIZE,1,fpw);
+					for(i=8,j=0;i<16;++i, ++j){
+						tmp[j*2]=buff[i]<<4;
+                                                tmp[j*2]=tmp[j*2]>>4;
+                                                tmp[j*2+1]=buff[i]>>4;
+                                        }
+                                        AES_encrypt(&ctx,tmp,w,poly);
+					fwrite(tmp,BUFFSIZE,1,fpw);
+				}else{
+                        		AES_encrypt(&ctx,buff,w,poly);
+	                                fwrite(buff,BUFFSIZE,1,fpw);
+				}
+        	                readb = fread(buff,1,BUFFSIZE,fpr);
+                        }
+		}else if(argv[1][0]=='D'||argv[1][0]=='d'){
+                	readb = fread(buff,1,BUFFSIZE,fpr);
+                        while(readb==BUFFSIZE){
+				if(w==4){
+                                        int i;
+                                        uint8_t tmp[8]={[0 ... 7]=0};
+					AES_decrypt(&ctx,buff,w,poly);
+                                        for(i=0;i<8;++i){
+						tmp[i]=buff[i*2+1]<<4;
+                                                tmp[i]=tmp[i]^buff[i*2];
+                                        }
+                                        fwrite(tmp,8,1,fpw);
+                                }else{
+                                        AES_decrypt(&ctx,buff,w,poly);
+                                        fwrite(buff,BUFFSIZE,1,fpw);
+                                }
+
+                                readb = fread(buff,1,BUFFSIZE,fpr);
+			}
+		}else{
+                	printf("\n\nUse test [CcDd] filenamein filenameout GF(hex) characteristical_polynomial(hex)\n");
+		}
+                fclose(fpr);
+                fclose(fpw);
+	}
 }
 
 
