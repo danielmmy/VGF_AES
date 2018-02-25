@@ -84,20 +84,31 @@ static void test_cipher_files(int argc, char **argv){
 				if(w==4){
 					int i,j;
 					uint8_t tmp[16];
+					uint8_t tmp2[8];
 					for(i=0;i<8;++i){
 						tmp[i*2]=buff[i]<<4;
 						tmp[i*2]=tmp[i*2]>>4;
 						tmp[i*2+1]=buff[i]>>4;
 					}
 					AES_encrypt(&ctx,tmp,w,poly);
-					fwrite(tmp,BUFFSIZE,1,fpw);
+					for(i=0;i<8;++i){
+						tmp2[i]=tmp[i*2+1]<<4;
+						tmp2[i]=tmp2[i]^tmp[i*2];
+					}
+					fwrite(tmp2,8,1,fpw);
+//					fwrite(tmp,BUFFSIZE,1,fpw);
 					for(i=8,j=0;i<16;++i, ++j){
 						tmp[j*2]=buff[i]<<4;
                                                 tmp[j*2]=tmp[j*2]>>4;
                                                 tmp[j*2+1]=buff[i]>>4;
                                         }
                                         AES_encrypt(&ctx,tmp,w,poly);
-					fwrite(tmp,BUFFSIZE,1,fpw);
+					for(i=0;i<8;++i){
+						tmp2[i]=tmp[i*2+1]<<4;
+						tmp2[i]=tmp2[i]^tmp[i*2];
+                                        }
+                                        fwrite(tmp2,8,1,fpw);
+//					fwrite(tmp,BUFFSIZE,1,fpw);
 				}else{
                         		AES_encrypt(&ctx,buff,w,poly);
 	                                fwrite(buff,BUFFSIZE,1,fpw);
@@ -108,6 +119,32 @@ static void test_cipher_files(int argc, char **argv){
                 	readb = fread(buff,1,BUFFSIZE,fpr);
                         while(readb==BUFFSIZE){
 				if(w==4){
+					int i,j;
+                                        uint8_t tmp[16];
+                                        uint8_t tmp2[8];
+                                        for(i=0;i<8;++i){
+                                                tmp[i*2]=buff[i]<<4;
+                                                tmp[i*2]=tmp[i*2]>>4;
+                                                tmp[i*2+1]=buff[i]>>4;
+                                        }
+                                        AES_decrypt(&ctx,tmp,w,poly);
+                                        for(i=0;i<8;++i){
+                                                tmp2[i]=tmp[i*2+1]<<4;
+                                                tmp2[i]=tmp2[i]^tmp[i*2];
+                                        }
+                                        fwrite(tmp2,8,1,fpw);
+                                        for(i=8,j=0;i<16;++i, ++j){
+                                                tmp[j*2]=buff[i]<<4;
+                                                tmp[j*2]=tmp[j*2]>>4;
+                                                tmp[j*2+1]=buff[i]>>4;
+                                        }
+                                        AES_decrypt(&ctx,tmp,w,poly);
+                                        for(i=0;i<8;++i){
+                                                tmp2[i]=tmp[i*2+1]<<4;
+                                                tmp2[i]=tmp2[i]^tmp[i*2];
+                                        }
+                                        fwrite(tmp2,8,1,fpw);
+#if 0
                                         int i;
                                         uint8_t tmp[8]={[0 ... 7]=0};
 					AES_decrypt(&ctx,buff,w,poly);
@@ -116,6 +153,7 @@ static void test_cipher_files(int argc, char **argv){
                                                 tmp[i]=tmp[i]^buff[i*2];
                                         }
                                         fwrite(tmp,8,1,fpw);
+#endif
                                 }else{
                                         AES_decrypt(&ctx,buff,w,poly);
                                         fwrite(buff,BUFFSIZE,1,fpw);
