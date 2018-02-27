@@ -17,21 +17,22 @@ static void test_cipher_files(int argc, char **argv);
 
 
 int main(int argc, char **argv){
-	initialize_boxes(8,0x11b);
-	test_encrypt();
-	test_decrypt();
-	test_encrypt_gf8();
-	printf("\n");
-	test_decrypt_gf8();
-	printf("\n");
-	initialize_boxes(4,0x13);
-	test_encrypt_gf4();
-	printf("\n");
-	test_decrypt_gf4();
 	
 	if(argc==6){
 		test_cipher_files(argc,argv);
 	}else{
+		initialize_boxes(8,0x11b);
+		test_encrypt();
+		test_decrypt();
+		test_encrypt_gf8();
+		printf("\n");
+		test_decrypt_gf8();
+		printf("\n");
+		initialize_boxes(4,0x13);
+		test_encrypt_gf4();
+		printf("\n");
+		test_decrypt_gf4();
+
 		printf("\n\nUse \"test [CcDd] filenamein filenameout GF(hex) characteristical_polynomial(hex)\" to cipher or decipher a file\n");
 	}
 	return 0;
